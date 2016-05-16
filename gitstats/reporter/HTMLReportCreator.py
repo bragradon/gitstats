@@ -604,7 +604,7 @@ class HTMLReportCreator(ReportCreator):
         # commits_by_year
         plot = "'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid"
         plot_file = PlotFileCreator(self.conf, self.path + '/commits_by_year.plot', 'commits_by_year.png', plot)
-        plot_file.set_time_from_string()
+        plot_file.set_time("%Y")
         plot_file.ylabel = 'Commits'
         plot_file.xtics = "1"
         plot_file.create()
