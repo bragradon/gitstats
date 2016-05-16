@@ -9,7 +9,7 @@ setup(name='gitstats',
         packages = find_packages(exclude=['build','dist']),
         package_data = {
                 # Include *.gif or *.js files in the 'reporter' package:
-                'gitstats.reporter': ['*.gif', '*.js'],
+                'gitstats.reporter': ['*.gif', '*.js', '*.css'],
             },
         entry_points={
             'console_scripts': [
