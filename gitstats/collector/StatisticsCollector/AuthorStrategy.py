@@ -2,6 +2,7 @@ import re
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from gitstats.model.Author import Author
 
 
 class AuthorStrategy(StatisticsCollectorStrategy):
@@ -32,26 +33,23 @@ class AuthorStrategy(StatisticsCollectorStrategy):
                 if pos != -1:
                     try:
                         old_stamp = stamp
-                        (stamp, author) = (int(line[:pos]), line[pos + 1:])
-                        author = self.get_merged_author(author)
+                        (stamp, author_name) = (int(line[:pos]), line[pos + 1:])
+                        author_name = self.get_merged_author(author_name)
                         if old_stamp > stamp:
                             # clock skew, keep old timestamp to avoid having ugly graph
                             stamp = old_stamp
-                        if author not in self.data.authors:
-                            self.data.authors[author] = {'lines_added': 0, 'lines_removed': 0, 'commits': 0}
-                        self.data.authors[author]['commits'] = self.data.authors[author].get('commits', 0) + 1
-                        self.data.authors[author]['lines_added'] = self.data.authors[author].get('lines_added',
-                                                                                                 0) + inserted
-                        self.data.authors[author]['lines_removed'] = self.data.authors[author].get('lines_removed',
-                                                                                                   0) + deleted
+                        if author_name not in self.data.authors.keys():
+                            self.data.authors[author_name] = Author(author_name)
+                        author = self.data.authors[author_name]
+                        author.commits += 1
+                        author.lines_added += inserted
+                        author.lines_removed += deleted
                         if stamp not in self.data.changes_by_date_by_author:
                             self.data.changes_by_date_by_author[stamp] = {}
                         if author not in self.data.changes_by_date_by_author[stamp]:
                             self.data.changes_by_date_by_author[stamp][author] = {}
-                        self.data.changes_by_date_by_author[stamp][author]['lines_added'] = self.data.authors[author][
-                            'lines_added']
-                        self.data.changes_by_date_by_author[stamp][author]['commits'] = self.data.authors[author][
-                            'commits']
+                        self.data.changes_by_date_by_author[stamp][author]['lines_added'] = author.lines_added
+                        self.data.changes_by_date_by_author[stamp][author]['commits'] = author.commits
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
                         print('Warning: unexpected line "%s"' % line)

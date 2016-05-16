@@ -300,13 +300,20 @@ class HTMLReportCreator(ReportCreator):
         f.write('<table class="authors sortable" id="authors">')
         f.write(
             '<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
-        for author in self.data.get_authors(self.conf.max_authors):
-            info = self.data.get_author_info(author)
+        total_commits = self.data.get_total_commits()
+        for i, author in enumerate(self.data.get_authors(self.conf.max_authors)):
             f.write(
                 '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
-                    author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'],
-                    info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']),
-                    info['place_by_commits']))
+                    author.name,
+                    author.commits,
+                    author.get_commits_frac(total_commits),
+                    author.lines_added,
+                    author.lines_removed,
+                    author.get_date_first_string(self.conf.date_format),
+                    author.get_date_last_string(self.conf.date_format),
+                    author.get_time_delta(),
+                    len(author.active_days),
+                    i+1))
         f.write('</table>')
 
         all_authors = self.data.get_authors()
@@ -393,8 +400,8 @@ class HTMLReportCreator(ReportCreator):
 
         # Domains
         f.write(self.html_header(2, 'Commits by Domains'))
-        domains_by_commits = self.data.get_keys_sorted_by_value_key(self.data.domains, 'commits')
-        domains_by_commits.reverse()  # most first
+        domains_by_commits = self.data.get_domains_sorted_by_commits()
+        #domains_by_commits.reverse()  # most first
         f.write('<div class="vtable"><table>')
         f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
         fp = open(self.path + '/domains.dat', 'w')
@@ -629,7 +636,7 @@ class HTMLReportCreator(ReportCreator):
         plots = []
         for a in self.authors_to_plot:
             i += 1
-            author = a.replace("\"", "\\\"").replace("`", "")
+            author = a.name.replace("\"", "\\\"").replace("`", "")
             plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
         plots = ", ".join(plots)
         plot_file = PlotFileCreator(self.conf, self.path + '/lines_of_code_by_author.plot', 'lines_of_code_by_author.png',
@@ -644,7 +651,7 @@ class HTMLReportCreator(ReportCreator):
         plots = []
         for a in self.authors_to_plot:
             i += 1
-            author = a.replace("\"", "\\\"").replace("`", "")
+            author = a.name.replace("\"", "\\\"").replace("`", "")
             plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
         plots = ", ".join(plots)
         plot_file = PlotFileCreator(self.conf, self.path + '/commits_by_author.plot', 'commits_by_author.png', plots)

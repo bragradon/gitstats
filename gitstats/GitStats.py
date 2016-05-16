@@ -10,8 +10,8 @@ import zlib
 
 from gitstats.Configuration import Configuration
 from gitstats.RunExternal import RunExternal
-from gitstats.collector.Data import Data
 from gitstats.collector.DataCollector import DataCollector
+from gitstats.model.Data import Data
 from gitstats.reporter.HTMLReportCreator import HTMLReportCreator
 
 

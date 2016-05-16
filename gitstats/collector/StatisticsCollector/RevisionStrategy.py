@@ -2,6 +2,7 @@ import datetime
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from gitstats.model.Author import Author
 
 
 class RevisionStrategy(StatisticsCollectorStrategy):
@@ -123,24 +124,22 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             self.data.activity_by_year_week_peak = self.data.activity_by_year_week[yyw]
 
     def _collect_author(self, parts):
-        author = parts[4].split('<', 1)[0]
-        author = author.rstrip()
-        author = self.get_merged_author(author)
-        if author not in self.data.authors:
-            self.data.authors[author] = {}
-        return author
+        author_name = parts[4].split('<', 1)[0]
+        author_name = author_name.rstrip()
+        author_name = self.get_merged_author(author_name)
+        if author_name not in self.data.authors.keys():
+            self.data.authors[author_name] = Author(author_name)
+        return self.data.authors[author_name]
 
-    def _collect_author_commits(self, author, stamp):
-        if 'last_commit_stamp' not in self.data.authors[author]:
-            self.data.authors[author]['last_commit_stamp'] = stamp
-        if stamp > self.data.authors[author]['last_commit_stamp']:
-            self.data.authors[author]['last_commit_stamp'] = stamp
-        if 'first_commit_stamp' not in self.data.authors[author]:
-            self.data.authors[author]['first_commit_stamp'] = stamp
-        if stamp < self.data.authors[author]['first_commit_stamp']:
-            self.data.authors[author]['first_commit_stamp'] = stamp
+    @staticmethod
+    def _collect_author_commits(author, stamp):
+        if stamp > author.last_commit_stamp:
+            author.last_commit_stamp = stamp
+        if author.first_commit_stamp == 0 or stamp < author.first_commit_stamp:
+            author.first_commit_stamp = stamp
 
     def _collect_author_of_year(self, date, author):
+        author = author.name
         yy_mm = date.strftime('%Y-%m')
         if yy_mm in self.data.author_of_month:
             self.data.author_of_month[yy_mm][author] = self.data.author_of_month[yy_mm].get(author, 0) + 1
@@ -159,12 +158,9 @@ class RevisionStrategy(StatisticsCollectorStrategy):
 
     def _collect_author_active_days(self, date, author):
         yy_mm_dd = date.strftime(self.conf.date_format)
-        if 'last_active_day' not in self.data.authors[author]:
-            self.data.authors[author]['last_active_day'] = yy_mm_dd
-            self.data.authors[author]['active_days'] = {yy_mm_dd}
-        elif yy_mm_dd != self.data.authors[author]['last_active_day']:
-            self.data.authors[author]['last_active_day'] = yy_mm_dd
-            self.data.authors[author]['active_days'].add(yy_mm_dd)
+        if yy_mm_dd != author.last_active_day:
+            author.last_active_day = yy_mm_dd
+            author.active_days.add(yy_mm_dd)
 
     def _collect_project_active_days(self, date):
         yy_mm_dd = date.strftime(self.conf.date_format)

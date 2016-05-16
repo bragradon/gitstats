@@ -9,7 +9,6 @@ class Data(object):
 
         self.project_name = None
 
-        self.total_authors = 0
         self.activity_by_hour_of_day = {}  # hour -> commits
         self.activity_by_day_of_week = {}  # day -> commits
         self.activity_by_month_of_year = {}  # month [1-12] -> commits
@@ -65,11 +64,6 @@ class Data(object):
         # line statistics
         self.changes_by_date = {}  # stamp -> { files, ins, del }
 
-    ##
-    # : get a dictionary of author
-    def get_author_info(self, author):
-        return self.authors[author]
-
     def get_activity_by_day_of_week(self):
         return self.activity_by_day_of_week
 
@@ -89,8 +83,7 @@ class Data(object):
     ##
     # Get a list of authors
     def get_authors(self, limit=None):
-        res = self.get_authors_by_commits()
-        res.reverse()
+        res = self.get_authors_sorted_by_commits(reverse=True)
         return res[:limit]
 
     def get_first_commit_date(self):
@@ -109,7 +102,7 @@ class Data(object):
         return list(self.tags.keys()).sort()
 
     def get_total_authors(self):
-        return self.total_authors
+        return len(self.authors)
 
     def get_total_commits(self):
         return self.total_commits
@@ -123,10 +116,10 @@ class Data(object):
     def get_total_size(self):
         return self.total_size
 
-    def get_authors_by_commits(self):
-        return sorted(self.authors.values(), key=self.get_author_commits)
+    def get_authors_sorted_by_commits(self, reverse=False):
+        return sorted(self.authors.values(), key=self.get_author_commits, reverse=reverse)
 
-    def get_domains_sorted_by_commits(self):
+    def get_domains_sorted_by_commits(self, reverse=False):
         # TODO: actually sort it
         return self.domains.keys()
 
