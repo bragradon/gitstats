@@ -9,10 +9,6 @@ class AuthorStrategy(StatisticsCollectorStrategy):
         super().__init__(data, conf)
 
     def collect(self):
-        # TODO: fix for merged authors
-        self.data.total_authors += int(RunExternal.execute(['git shortlog -s %s' % self.get_log_range(), 'wc -l']))
-        # self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
-
         # defined for stamp, author only if author committed at this timestamp.
         self.data.changes_by_date_by_author = {}  # stamp -> author -> lines_added
 

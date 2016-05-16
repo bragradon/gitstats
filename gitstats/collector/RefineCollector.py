@@ -14,6 +14,9 @@ class GitRefineCollector(object):
         for i, name in enumerate(self.data.authors_by_commits):
             self.data.authors[name]['place_by_commits'] = i + 1
 
+        # total number of authors
+        self.data.total_authors = len(set(self.data.authors.keys()))
+
         for name in list(self.data.authors.keys()):
             a = self.data.authors[name]
             a['commits_frac'] = (100 * float(a['commits'])) / self.data.get_total_commits()
