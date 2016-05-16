@@ -400,8 +400,7 @@ class HTMLReportCreator(ReportCreator):
 
         # Domains
         f.write(self.html_header(2, 'Commits by Domains'))
-        domains_by_commits = self.data.get_domains_sorted_by_commits()
-        #domains_by_commits.reverse()  # most first
+        domains_by_commits = self.data.get_domains_sorted_by_commits(reverse=True)
         f.write('<div class="vtable"><table>')
         f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
         fp = open(self.path + '/domains.dat', 'w')
@@ -410,10 +409,9 @@ class HTMLReportCreator(ReportCreator):
             if n == self.conf.max_domains:
                 break
             n += 1
-            info = self.data.get_domain_info(domain)
-            fp.write('%s %d %d\n' % (domain, n, info['commits']))
+            fp.write('%s %d %d\n' % (domain.name, n, domain.commits))
             f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (
-                domain, info['commits'], (100.0 * info['commits'] / self.data.get_total_commits())))
+                domain.name, domain.commits, (100.0 * domain.commits / self.data.get_total_commits())))
         f.write('</table></div>')
         f.write('<img src="domains.png" alt="Commits by Domains">')
         fp.close()

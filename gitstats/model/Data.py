@@ -26,7 +26,7 @@ class Data(object):
         self.authors_by_commits = 0
 
         # domains
-        self.domains = {}  # domain -> commits
+        self.domains = {}
 
         # author of the month
         self.author_of_month = {}  # month -> author -> commits
@@ -73,13 +73,6 @@ class Data(object):
     def get_active_days(self):
         return self.active_days
 
-    def get_domains(self):
-        return list(self.domains.keys())
-
-    # : get a dictionary of domains
-    def get_domain_info(self, domain):
-        return self.domains[domain]
-
     ##
     # Get a list of authors
     def get_authors(self, limit=None):
@@ -120,8 +113,7 @@ class Data(object):
         return sorted(self.authors.values(), key=self.get_author_commits, reverse=reverse)
 
     def get_domains_sorted_by_commits(self, reverse=False):
-        # TODO: actually sort it
-        return self.domains.keys()
+        return sorted(self.domains.values(), key=self.get_domain_commits, reverse=reverse)
 
     @staticmethod
     def get_keys_sorted_by_values(d):
@@ -130,3 +122,7 @@ class Data(object):
     @staticmethod
     def get_author_commits(author):
         return author.commits
+
+    @staticmethod
+    def get_domain_commits(domain):
+        return domain.commits

@@ -3,6 +3,7 @@ import datetime
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 from gitstats.model.Author import Author
+from gitstats.model.Domain import Domain
 
 
 class RevisionStrategy(StatisticsCollectorStrategy):
@@ -30,10 +31,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             self._collect_activity_by_day(date)
 
             # domain stats
-            domain = self._collect_domain_stats(parts)
-
-            # commits
-            self._collect_commits(domain)
+            self._collect_domain_stats(parts)
 
             # hour of week
             self._collect_hour_of_week(date)
@@ -90,15 +88,13 @@ class RevisionStrategy(StatisticsCollectorStrategy):
     def _collect_domain_stats(self, parts):
         mail = parts[4].split('<', 1)[1]
         mail = mail.rstrip('>')
-        domain = '?'
+        domain_name = '?'
         if mail.find('@') != -1:
-            domain = mail.rsplit('@', 1)[1]
-        if domain not in self.data.domains:
-            self.data.domains[domain] = {}
-        return domain
-
-    def _collect_commits(self, domain):
-        self.data.domains[domain]['commits'] = self.data.domains[domain].get('commits', 0) + 1
+            domain_name = mail.rsplit('@', 1)[1]
+        if domain_name not in self.data.domains.keys():
+            self.data.domains[domain_name] = Domain(domain_name)
+        domain = self.data.domains[domain_name]
+        domain.commits += 1
 
     def _collect_hour_of_week(self, date):
         day = date.weekday()
