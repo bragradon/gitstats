@@ -245,31 +245,32 @@ class HTMLReportCreator(ReportCreator):
         f.write(self.html_header(2, 'Commits by year/month'))
         f.write(
             '<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
-        for yy_mm in reversed(sorted(self.data.commits_by_month.keys())):
+        for yy_mm in reversed(sorted(self.data.months)):
             f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (
-                yy_mm, self.data.commits_by_month.get(yy_mm, 0), self.data.lines_added_by_month.get(yy_mm, 0),
+                yy_mm, self.data.get_total_commits_by_month(yy_mm), self.data.lines_added_by_month.get(yy_mm, 0),
                 self.data.lines_removed_by_month.get(yy_mm, 0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
         fg = open(self.path + '/commits_by_year_month.dat', 'w')
-        for yy_mm in sorted(self.data.commits_by_month.keys()):
-            fg.write('%s %s\n' % (yy_mm, self.data.commits_by_month[yy_mm]))
+        for yy_mm in sorted(self.data.months):
+            fg.write('%s %s\n' % (yy_mm, self.data.get_total_commits_by_month(yy_mm)))
         fg.close()
 
         # Commits by year
         f.write(self.html_header(2, 'Commits by Year'))
         f.write(
             '<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
-        for yy in reversed(sorted(self.data.commits_by_year.keys())):
+        for yy in reversed(sorted(self.data.years)):
+            total_commits = self.data.get_total_commits_by_year(yy)
             f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (
-                yy, self.data.commits_by_year.get(yy, 0),
-                (100.0 * self.data.commits_by_year.get(yy, 0)) / self.data.get_total_commits(),
+                yy, total_commits,
+                (100.0 * total_commits) / self.data.get_total_commits(),
                 self.data.lines_added_by_year.get(yy, 0), self.data.lines_removed_by_year.get(yy, 0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year.png" alt="Commits by Year">')
         fg = open(self.path + '/commits_by_year.dat', 'w')
-        for yy in sorted(self.data.commits_by_year.keys()):
-            fg.write('%d %d\n' % (yy, self.data.commits_by_year[yy]))
+        for yy in sorted(self.data.years):
+            fg.write('%d %d\n' % (yy, self.data.get_total_commits_by_year(yy)))
         fg.close()
 
         # Commits by timezone
@@ -369,15 +370,18 @@ class HTMLReportCreator(ReportCreator):
         f.write(
             '<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
             self.conf.authors_top)
-        for yy_mm in reversed(sorted(self.data.author_of_month.keys())):
-            author_dict = self.data.author_of_month[yy_mm]
-            authors = self.data.get_keys_sorted_by_values(author_dict)
-            authors.reverse()
-            commits = self.data.author_of_month[yy_mm][authors[0]]
-            next_line = ', '.join(authors[1:self.conf.authors_top + 1])
+        for yy_mm in reversed(sorted(self.data.months)):
+            authors = self.data.get_authors_of_month(yy_mm, self.conf.authors_top + 1)
+            commits = authors[0].commits_by_month[yy_mm]
+            name = authors[0].name
+            author_names = []
+            for author in authors[1:]:
+                author_names.append(author.name)
+            total_commits = self.data.get_total_commits_by_month(yy_mm)
+            next_line = ', '.join(author_names)
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy_mm, authors[0], commits, (100.0 * commits) / self.data.commits_by_month[yy_mm],
-                self.data.commits_by_month[yy_mm],
+                yy_mm, name, commits, (100.0 * commits) / total_commits,
+                total_commits,
                 next_line, len(authors)))
 
         f.write('</table>')
@@ -386,16 +390,20 @@ class HTMLReportCreator(ReportCreator):
         f.write(
             '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
             self.conf.authors_top)
-        for yy in reversed(sorted(self.data.author_of_year.keys())):
-            author_dict = self.data.author_of_year[yy]
-            authors = self.data.get_keys_sorted_by_values(author_dict)
-            authors.reverse()
-            commits = self.data.author_of_year[yy][authors[0]]
-            next_line = ', '.join(authors[1:self.conf.authors_top + 1])
+        for yy in reversed(sorted(self.data.years)):
+            authors = self.data.get_authors_of_year(yy, self.conf.authors_top + 1)
+            commits = authors[0].commits_by_year[yy]
+            name = authors[0].name
+            author_names = []
+            for author in authors[1:]:
+                author_names.append(author.name)
+            total_commits = self.data.get_total_commits_by_year(yy)
+            next_line = ', '.join(author_names)
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy, authors[0], commits, (100.0 * commits) / self.data.commits_by_year[yy], self.data.commits_by_year[yy],
-                next_line,
-                len(authors)))
+                yy, name, commits, (100.0 * commits) / total_commits,
+                total_commits,
+                next_line, len(authors)))
+
         f.write('</table>')
 
         # Domains

@@ -41,7 +41,7 @@ class AuthorStrategy(StatisticsCollectorStrategy):
                         if author_name not in self.data.authors.keys():
                             self.data.authors[author_name] = Author(author_name)
                         author = self.data.authors[author_name]
-                        author.commits += 1
+                        self.data.add_commit(author, stamp)
                         author.lines_added += inserted
                         author.lines_removed += deleted
                         if stamp not in self.data.changes_by_date_by_author:

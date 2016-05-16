@@ -51,9 +51,6 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             #  commits, note again that commits may be in any date order because of cherry-picking and patches
             self._collect_author_commits(author, stamp)
 
-            # author of the month/year
-            self._collect_author_of_year(date, author)
-
             # authors: active days
             self._collect_author_active_days(date, author)
 
@@ -133,24 +130,6 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             author.last_commit_stamp = stamp
         if author.first_commit_stamp == 0 or stamp < author.first_commit_stamp:
             author.first_commit_stamp = stamp
-
-    def _collect_author_of_year(self, date, author):
-        author = author.name
-        yy_mm = date.strftime('%Y-%m')
-        if yy_mm in self.data.author_of_month:
-            self.data.author_of_month[yy_mm][author] = self.data.author_of_month[yy_mm].get(author, 0) + 1
-        else:
-            self.data.author_of_month[yy_mm] = {}
-            self.data.author_of_month[yy_mm][author] = 1
-        self.data.commits_by_month[yy_mm] = self.data.commits_by_month.get(yy_mm, 0) + 1
-
-        yy = date.year
-        if yy in self.data.author_of_year:
-            self.data.author_of_year[yy][author] = self.data.author_of_year[yy].get(author, 0) + 1
-        else:
-            self.data.author_of_year[yy] = {}
-            self.data.author_of_year[yy][author] = 1
-        self.data.commits_by_year[yy] = self.data.commits_by_year.get(yy, 0) + 1
 
     def _collect_author_active_days(self, date, author):
         yy_mm_dd = date.strftime(self.conf.date_format)

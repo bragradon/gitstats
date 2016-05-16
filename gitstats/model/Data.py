@@ -29,10 +29,8 @@ class Data(object):
         self.domains = {}
 
         # author of the month
-        self.author_of_month = {}  # month -> author -> commits
-        self.author_of_year = {}  # year -> author -> commits
-        self.commits_by_month = {}  # month -> commits
-        self.commits_by_year = {}  # year -> commits
+        self.months = set()
+        self.years = set()
         self.lines_added_by_month = {}  # month -> lines added
         self.lines_added_by_year = {}  # year -> lines added
         self.lines_removed_by_month = {}  # month -> lines removed
@@ -79,6 +77,40 @@ class Data(object):
         res = self.get_authors_sorted_by_commits(reverse=True)
         return res[:limit]
 
+    def get_authors_of_month(self, yy_mm, top=None):
+        result = []
+        for author in self.authors.values():
+            if yy_mm in author.commits_by_month.keys():
+                result.append(author)
+        result = sorted(result, key=lambda k: k.commits_by_month[yy_mm], reverse=True)
+        if top:
+            result = result[:top]
+        return result
+
+    def get_total_commits_by_month(self, yy_mm):
+        authors = self.get_authors_of_month(yy_mm)
+        total_commits = 0
+        for author in authors:
+            total_commits += author.commits_by_month[yy_mm]
+        return total_commits
+
+    def get_authors_of_year(self, year, top=None):
+        result = []
+        for author in self.authors.values():
+            if year in author.commits_by_year.keys():
+                result.append(author)
+        result = sorted(result, key=lambda k: k.commits_by_year[year], reverse=True)
+        if top:
+            result = result[:top]
+        return result
+
+    def get_total_commits_by_year(self, year):
+        authors = self.get_authors_of_year(year)
+        total_commits = 0
+        for author in authors:
+            total_commits += author.commits_by_year[year]
+        return total_commits
+
     def get_first_commit_date(self):
         return datetime.datetime.fromtimestamp(self.first_commit_stamp)
 
@@ -110,19 +142,20 @@ class Data(object):
         return self.total_size
 
     def get_authors_sorted_by_commits(self, reverse=False):
-        return sorted(self.authors.values(), key=self.get_author_commits, reverse=reverse)
+        return sorted(self.authors.values(), key=lambda k: k.commits, reverse=reverse)
 
     def get_domains_sorted_by_commits(self, reverse=False):
-        return sorted(self.domains.values(), key=self.get_domain_commits, reverse=reverse)
+        return sorted(self.domains.values(), key=lambda k: k.commits, reverse=reverse)
 
     @staticmethod
     def get_keys_sorted_by_values(d):
         return [el[1] for el in sorted([(el[1], el[0]) for el in list(d.items())])]
 
-    @staticmethod
-    def get_author_commits(author):
-        return author.commits
+    def add_commit(self, author, stamp):
+        date = datetime.datetime.fromtimestamp(float(stamp))
+        yy_mm = date.strftime('%Y-%m')
+        yy = date.year
 
-    @staticmethod
-    def get_domain_commits(domain):
-        return domain.commits
+        self.months.add(yy_mm)
+        self.years.add(yy)
+        author.add_commit(yy_mm, yy)
