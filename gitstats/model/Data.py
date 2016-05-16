@@ -20,7 +20,6 @@ class Data(object):
         self.activity_by_year_week_peak = 0
 
         # name
-        # {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
         self.authors = {}
 
         self.total_commits = 0
@@ -90,7 +89,7 @@ class Data(object):
     ##
     # Get a list of authors
     def get_authors(self, limit=None):
-        res = self.get_keys_sorted_by_value_key(self.authors, 'commits')
+        res = self.get_authors_by_commits()
         res.reverse()
         return res[:limit]
 
@@ -125,12 +124,16 @@ class Data(object):
         return self.total_size
 
     def get_authors_by_commits(self):
-        return self.get_keys_sorted_by_value_key(self.authors, 'commits')
+        return sorted(self.authors.values(), key=self.get_author_commits)
 
-    @staticmethod
-    def get_keys_sorted_by_value_key(d, key):
-        return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
+    def get_domains_sorted_by_commits(self):
+        # TODO: actually sort it
+        return self.domains.keys()
 
     @staticmethod
     def get_keys_sorted_by_values(d):
         return [el[1] for el in sorted([(el[1], el[0]) for el in list(d.items())])]
+
+    @staticmethod
+    def get_author_commits(author):
+        return author.commits
