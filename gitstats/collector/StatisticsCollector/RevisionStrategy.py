@@ -100,14 +100,14 @@ class RevisionStrategy(StatisticsCollectorStrategy):
         self.data.domains[domain]['commits'] = self.data.domains[domain].get('commits', 0) + 1
 
     def _collect_hour_of_week(self, date):
-        day = date.weekday
+        day = date.weekday()
         hour = date.hour
         if day not in self.data.activity_by_hour_of_week:
             self.data.activity_by_hour_of_week[day] = {}
         self.data.activity_by_hour_of_week[day][hour] = self.data.activity_by_hour_of_week[day].get(hour, 0) + 1
 
     def _collect_most_active_hour(self, date):
-        day = date.weekday
+        day = date.weekday()
         hour = date.hour
         if self.data.activity_by_hour_of_week[day][hour] > self.data.activity_by_hour_of_week_busiest:
             self.data.activity_by_hour_of_week_busiest = self.data.activity_by_hour_of_week[day][hour]
