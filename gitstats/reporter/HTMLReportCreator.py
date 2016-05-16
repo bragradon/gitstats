@@ -438,7 +438,7 @@ class HTMLReportCreator(ReportCreator):
         files_by_date = set()
         for stamp in sorted(self.data.files_by_stamp.keys()):
             files_by_date.add('%s %d' % (
-                datetime.datetime.fromtimestamp(stamp).strftime(self.conf.date_format), self.data.files_by_stamp[stamp]))
+                stamp, self.data.files_by_stamp[stamp]))
 
         fg = open(self.path + '/files_by_date.dat', 'w')
         for line in sorted(list(files_by_date)):
