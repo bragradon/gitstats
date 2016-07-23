@@ -15,6 +15,9 @@ class Author(object):
         self.last_active_day = 0
         self.active_days = set()
 
+    def __str__(self):
+        return self.name
+
     def add_commit(self, yy_mm, yy):
         self.commits += 1
 

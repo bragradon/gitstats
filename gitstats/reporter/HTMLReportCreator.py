@@ -320,7 +320,7 @@ class HTMLReportCreator(ReportCreator):
         all_authors = self.data.get_authors()
         if len(all_authors) > self.conf.max_authors:
             rest = all_authors[self.conf.max_authors:]
-            f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
+            f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(map(str, rest)))
 
         f.write(self.html_header(2, 'Cumulated Added Lines of Code per Author'))
         f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
