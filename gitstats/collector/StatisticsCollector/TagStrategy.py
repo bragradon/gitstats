@@ -1,9 +1,9 @@
 import datetime
 import re
+from builtins import super
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
-from builtins import super
 
 
 class TagStrategy(StatisticsCollectorStrategy):

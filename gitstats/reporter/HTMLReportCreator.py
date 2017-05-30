@@ -3,6 +3,7 @@ import glob
 import os
 import shutil
 import time
+from builtins import super
 
 from gitstats.RunExternal import RunExternal
 from gitstats.reporter.PlotFileCreator import PlotFileCreator

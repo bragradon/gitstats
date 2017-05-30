@@ -1,8 +1,8 @@
 from multiprocessing import Pool
+from builtins import super
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
-from builtins import super
 
 
 def get_num_of_files_from_rev(time_rev):
