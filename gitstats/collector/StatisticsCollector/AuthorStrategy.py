@@ -3,6 +3,7 @@ import re
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 from gitstats.model.Author import Author
+from builtins import super
 
 
 class AuthorStrategy(StatisticsCollectorStrategy):

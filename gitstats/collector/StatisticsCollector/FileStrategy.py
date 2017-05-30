@@ -3,19 +3,21 @@ from multiprocessing import Pool
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from builtins import super
+
+
+def get_num_of_lines_in_blob(ext_blob):
+    """
+    Get number of lines in blob
+    """
+    ext, blob_id = ext_blob
+    return ext, blob_id, int(
+        RunExternal.execute(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
 
 
 class FileStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
-
-    @staticmethod
-    def get_num_of_lines_in_blob(ext_blob):
-        """
-        Get number of lines in blob
-        """
-        ext, blob_id = ext_blob
-        return ext, blob_id, int(RunExternal.execute(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
 
     def collect(self):
         # extensions and size of files
@@ -58,7 +60,7 @@ class FileStrategy(StatisticsCollectorStrategy):
 
         # Get info about line count for new blob's that wasn't found in cache
         pool = Pool(processes=self.conf.processes)
-        ext_blob_line_count = pool.map(self.get_num_of_lines_in_blob, blobs_to_read)
+        ext_blob_line_count = pool.map(get_num_of_lines_in_blob, blobs_to_read)
         pool.terminate()
         pool.join()
 

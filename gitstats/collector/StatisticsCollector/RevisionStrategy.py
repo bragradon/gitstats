@@ -4,6 +4,7 @@ from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 from gitstats.model.Author import Author
 from gitstats.model.Domain import Domain
+from builtins import super
 
 
 class RevisionStrategy(StatisticsCollectorStrategy):

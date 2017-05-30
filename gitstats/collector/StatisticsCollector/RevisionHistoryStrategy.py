@@ -2,20 +2,22 @@ from multiprocessing import Pool
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from builtins import super
+
+
+def get_num_of_files_from_rev(time_rev):
+    """
+    Get number of files changed in commit
+    """
+    time, rev = time_rev
+    return (
+        int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
 
 
 class RevisionHistoryStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
 
-    @staticmethod
-    def get_num_of_files_from_rev(time_rev):
-        """
-        Get number of files changed in commit
-        """
-        time, rev = time_rev
-        return (
-            int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
 
     def collect(self):
         # outputs "<stamp> <files>" for each revision
@@ -40,7 +42,7 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
 
         # Read revisions from repo
         pool = Pool(processes=self.conf.processes)
-        time_rev_count = pool.map(self.get_num_of_files_from_rev, revs_to_read)
+        time_rev_count = pool.map(get_num_of_files_from_rev, revs_to_read)
         pool.terminate()
         pool.join()
 
