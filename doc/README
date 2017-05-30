@@ -8,6 +8,8 @@ Requirements
 - Python (>= 2.6.0)
 - Git (>= 1.5.2.4)
 - Gnuplot (>= 4.0.0)
+- future (>= 0.16.0)
+- six (>= 1.10.0)
 - a git repository (bare clone will work as well)
 
 The above versions are not absolute requirements; older versions may work also.
