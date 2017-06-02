@@ -14,7 +14,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
     def collect(self):
         # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
         lines = RunExternal.execute([
-            'git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.get_log_range('HEAD'),
+            'git rev-list --no-merges --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.get_log_range('HEAD'),
             'grep -v ^commit'
         ]).split('\n')
         

@@ -28,7 +28,7 @@ class LineStrategy(StatisticsCollectorStrategy):
             extra = '--first-parent -m'
         
         lines = RunExternal.execute([
-            'git log --ignore-submodules -w --shortstat %s --pretty=format:"%%H %%at %%aN" %s %s' % (
+            'git log --no-merges --ignore-submodules -w --shortstat %s --pretty=format:"%%H %%at %%aN" %s %s' % (
                 extra,
                 ignore_msg_filter,
                 self.get_log_range('HEAD')

@@ -23,7 +23,7 @@ class AuthorStrategy(StatisticsCollectorStrategy):
         # (we need to walk through every commit to know who
         # committed what, not just through mainline)
         lines = RunExternal.execute([
-            'git log --ignore-submodules -w --shortstat --date-order --pretty=format:"%%H %%at %%aN" %s %s' % (
+            'git log --no-merges --ignore-submodules -w --shortstat --date-order --pretty=format:"%%H %%at %%aN" %s %s' % (
                 ignore_msg_filter,
                 self.get_log_range('HEAD')
             )

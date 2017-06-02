@@ -18,7 +18,7 @@ class TagStrategy(StatisticsCollectorStrategy):
             (tag_hash, tag) = line.split(' ')
 
             tag = tag.replace('refs/tags/', '')
-            output = RunExternal.execute(['git log --ignore-submodules -w "%s" --pretty=format:"%%at %%aN" -n 1' % tag_hash])
+            output = RunExternal.execute(['git log --no-merges --ignore-submodules -w "%s" --pretty=format:"%%at %%aN" -n 1' % tag_hash])
             if len(output) > 0:
                 parts = output.split(' ')
                 try:

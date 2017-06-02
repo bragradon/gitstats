@@ -25,7 +25,7 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
     def collect(self):
         # outputs "<stamp> <files>" for each revision
         rev_lines = RunExternal.execute([
-            'git rev-list --pretty=format:"%%at %%T" %s' % self.get_log_range('HEAD'),
+            'git rev-list --no-merges --pretty=format:"%%at %%T" %s' % self.get_log_range('HEAD'),
             'grep -v ^commit'
         ]).strip().split('\n')
         
