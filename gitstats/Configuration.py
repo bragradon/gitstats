@@ -18,6 +18,8 @@ class Configuration(object):
         self.date_format = '%Y-%m-%d'
         self.authors_merge = {}
         self.gnuplot_cmd = "gnuplot"
+        self.ignored_shas = set()
+        self.ignore_msg_regex = ''
 
     def load(self, filename):
         with open(filename, 'r') as f:
@@ -29,6 +31,7 @@ class Configuration(object):
                         setattr(self, attribute, conf[attribute])
             except yaml.YAMLError as exc:
                 print(exc)
+        self.ignored_shas = set(self.ignored_shas)
 
     def __str__(self):
         attributes = [a for a in dir(self) if not a.startswith('__') and not callable(getattr(self, a))]

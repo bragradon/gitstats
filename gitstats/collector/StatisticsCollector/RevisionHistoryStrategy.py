@@ -11,7 +11,10 @@ def get_num_of_files_from_rev(time_rev):
     """
     time, rev = time_rev
     return (
-        int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
+        int(time),
+        rev,
+        int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
+    )
 
 
 class RevisionHistoryStrategy(StatisticsCollectorStrategy):
@@ -21,9 +24,11 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
 
     def collect(self):
         # outputs "<stamp> <files>" for each revision
-        rev_lines = RunExternal.execute(['git rev-list --pretty=format:"%%at %%T" %s' % self.get_log_range('HEAD'),
-                                        'grep -v ^commit']).strip().split(
-            '\n')
+        rev_lines = RunExternal.execute([
+            'git rev-list --pretty=format:"%%at %%T" %s' % self.get_log_range('HEAD'),
+            'grep -v ^commit'
+        ]).strip().split('\n')
+        
         lines = []
         revs_to_read = []
         # Look up rev in cache and take info from cache if found

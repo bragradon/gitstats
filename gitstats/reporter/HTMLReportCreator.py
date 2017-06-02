@@ -46,9 +46,11 @@ class HTMLReportCreator(ReportCreator):
     def get_version(self):
         if not self.version:
             gitstats_repo = os.path.dirname(os.path.abspath(os.path.join(__file__, "../..")))
-            self.version = RunExternal.execute(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
-                                                (gitstats_repo, gitstats_repo,
-                                                 self.get_commit_range('HEAD').split('\n')[0])])
+            self.version = RunExternal.execute([
+                "git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" % (
+                    gitstats_repo, gitstats_repo, self.get_commit_range('HEAD').split('\n')[0]
+                )
+            ])
         return self.version
 
     def get_gnuplot_version(self):
@@ -301,20 +303,22 @@ class HTMLReportCreator(ReportCreator):
 
         f.write('<table class="authors sortable" id="authors">')
         f.write(
-            '<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
+            '<tr><th>Author</th><th>Commits (%)</th><th>lines</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th>Lines per day</th><th># by commits</th></tr>')
         total_commits = self.data.get_total_commits()
         for i, author in enumerate(self.data.get_authors(self.conf.max_authors)):
             f.write(
-                '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
+                '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td>td>%d</td><td>%d</td></tr>' % (
                     author.name,
                     author.commits,
                     author.get_commits_frac(total_commits),
+                    author.lines_added + author.lines_removed,
                     author.lines_added,
                     author.lines_removed,
                     author.get_date_first_string(self.conf.date_format),
                     author.get_date_last_string(self.conf.date_format),
                     author.get_time_delta(),
                     len(author.active_days),
+                    (author.lines_added + author.lines_removed) / author.get_time_delta().days,
                     i+1))
         f.write('</table>')
 
@@ -323,7 +327,7 @@ class HTMLReportCreator(ReportCreator):
             rest = all_authors[self.conf.max_authors:]
             f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(map(str, rest)))
 
-        f.write(self.html_header(2, 'Cumulated Added Lines of Code per Author'))
+        f.write(self.html_header(2, 'Cumulated Lines of Code per Author'))
         f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
         if len(all_authors) > self.conf.max_authors:
             f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf.max_authors)
@@ -336,7 +340,7 @@ class HTMLReportCreator(ReportCreator):
         fgl = open(self.path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(self.path + '/commits_by_author.dat', 'w')
 
-        lines_by_authors = {}  # cumulated added lines by
+        lines_by_authors = {}  # cumulated lines by
         # author. to save memory,
         # changes_by_date_by_author[stamp][author] is defined
         # only at points where author commits.
@@ -356,7 +360,7 @@ class HTMLReportCreator(ReportCreator):
             fgc.write('%d' % stamp)
             for author in self.authors_to_plot:
                 if author in list(self.data.changes_by_date_by_author[stamp].keys()):
-                    lines_by_authors[author] = self.data.changes_by_date_by_author[stamp][author]['lines_added']
+                    lines_by_authors[author] = self.data.changes_by_date_by_author[stamp][author]['lines_changed']
                     commits_by_authors[author] = self.data.changes_by_date_by_author[stamp][author]['commits']
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
@@ -369,40 +373,45 @@ class HTMLReportCreator(ReportCreator):
         f.write(self.html_header(2, 'Author of Month'))
         f.write('<table class="sortable" id="aom">')
         f.write(
-            '<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
+            '<tr><th>Month</th><th>Author</th><th>Lines (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
             self.conf.authors_top)
         for yy_mm in reversed(sorted(self.data.months)):
             authors = self.data.get_authors_of_month(yy_mm, self.conf.authors_top + 1)
-            commits = authors[0].commits_by_month[yy_mm]
+            lines = authors[0].lines_by_month[yy_mm]
             name = authors[0].name
             author_names = []
             for author in authors[1:]:
                 author_names.append(author.name)
-            total_commits = self.data.get_total_commits_by_month(yy_mm)
+            total_lines = self.data.get_total_lines_by_month(yy_mm)
             next_line = ', '.join(author_names)
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy_mm, name, commits, (100.0 * commits) / total_commits,
+                yy_mm,
+                name,
+                lines,
+                (100.0 * lines) / total_lines,
                 total_commits,
-                next_line, len(authors)))
+                next_line,
+                len(authors)
+            ))
 
         f.write('</table>')
 
         f.write(self.html_header(2, 'Author of Year'))
         f.write(
-            '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
+            '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Lines (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
             self.conf.authors_top)
         for yy in reversed(sorted(self.data.years)):
             authors = self.data.get_authors_of_year(yy, self.conf.authors_top + 1)
-            commits = authors[0].commits_by_year[yy]
+            lines = authors[0].lines_by_year[yy]
             name = authors[0].name
             author_names = []
             for author in authors[1:]:
                 author_names.append(author.name)
-            total_commits = self.data.get_total_commits_by_year(yy)
+            total_lines = self.data.get_total_lines_by_year(yy)
             next_line = ', '.join(author_names)
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy, name, commits, (100.0 * commits) / total_commits,
-                total_commits,
+                yy, name, lines, (100.0 * lines) / total_lines,
+                total_lines,
                 next_line, len(authors)))
 
         f.write('</table>')

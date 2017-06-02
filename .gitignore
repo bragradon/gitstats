@@ -3,4 +3,4 @@
 build/*
 dist/*
 gitstats.egg-info/*
-
+config.yml

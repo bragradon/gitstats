@@ -1,12 +1,15 @@
 import datetime
+from collections import defaultdict
 
 
 class Author(object):
     def __init__(self, name):
         self.name = name
         self.commits = 0
-        self.commits_by_month = {}
-        self.commits_by_year = {}
+        self.commits_by_month = defaultdict(lambda: 0)
+        self.commits_by_year = defaultdict(lambda: 0)
+        self.lines_by_month = defaultdict(lambda: 0)
+        self.lines_by_year = defaultdict(lambda: 0)
         self.lines_added = 0
         self.lines_removed = 0
         self.first_commit_stamp = 0
@@ -18,17 +21,12 @@ class Author(object):
     def __str__(self):
         return self.name
 
-    def add_commit(self, yy_mm, yy):
+    def add_commit(self, yy_mm, yy, num_lines):
         self.commits += 1
-
-        if yy_mm not in self.commits_by_month:
-            self.commits_by_month[yy_mm] = 0
         self.commits_by_month[yy_mm] += 1
-
-        if yy not in self.commits_by_year:
-            self.commits_by_year[yy] = 0
         self.commits_by_year[yy] += 1
-
+        self.lines_by_month[yy_mm] += num_lines
+        self.lines_by_year[yy] += num_lines
 
     def get_date_first(self):
         return datetime.datetime.fromtimestamp(self.first_commit_stamp)
