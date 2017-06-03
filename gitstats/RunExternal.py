@@ -24,7 +24,7 @@ class RunExternal(object):
         for x in cmds[1:]:
             p = subprocess.Popen(x, stdin=p.stdout, stdout=subprocess.PIPE, shell=True)
             processes.append(p)
-        output = p.communicate()[0].decode()
+        output = p.communicate()[0].decode('utf8')
         for p in processes:
             p.wait()
         end = time.time()

@@ -290,19 +290,28 @@ class HTMLReportCreator(ReportCreator):
 
         f.write('</body></html>')
         f.close()
-
+    
     def _create_authors(self):
         f = open(self.path + '/authors.html', 'w')
         self.print_header(f)
 
         f.write('<h1>Authors</h1>')
         self.print_nav(f)
-
-        # Authors :: List of authors
+        self._render_author_list(f)
+        self._render_cumulated_line_graphs(f)
+        self._render_author_of_the_month(f)
+        self._render_author_of_the_year(f)
+        self._render_author_domains(f)
+        self._render_author_ownership(f)
+        f.write('</body></html>')
+        f.close()
+    
+    def _render_author_list(self, f):
         f.write(self.html_header(2, 'List of Authors'))
-
+    
         f.write('<table class="authors sortable" id="authors">')
-        f.write('<tr><th>Author</th><th>Commits (%)</th><th>lines</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age in repo</th><th>% days active</th><th>Lines added per day</th><th># by commits</th></tr>')
+        f.write(
+            '<tr><th>Author</th><th>Commits (%)</th><th>lines</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age in repo</th><th>% days active</th><th>Lines added per day</th><th># by commits</th></tr>')
         total_commits = self.data.get_total_commits()
         for i, author in enumerate(self.data.get_authors(self.conf.max_authors)):
             days_in_repo = author.get_time_delta().days
@@ -319,40 +328,42 @@ class HTMLReportCreator(ReportCreator):
                     author.get_time_delta(),
                     ((100 * len(author.active_days)) / days_in_repo) if days_in_repo  else 0,
                     (author.lines_added / days_in_repo) if days_in_repo  else 0,
-                    i+1
+                    i + 1
                 )
             )
         f.write('</table>')
-
+    
+    def _render_cumulated_line_graphs(self, f):
         all_authors = self.data.get_authors()
         if len(all_authors) > self.conf.max_authors:
             rest = all_authors[self.conf.max_authors:]
-            f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(map(str, rest)))
-
+            f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(
+                map(str, rest)))
+    
         f.write(self.html_header(2, 'Cumulated Lines Added per Author'))
         f.write('<img src="lines_of_code_by_author.png" alt="Lines Added per Author">')
         if len(all_authors) > self.conf.max_authors:
             f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf.max_authors)
-
+    
         f.write(self.html_header(2, 'Commits per Author'))
         f.write('<img src="commits_by_author.png" alt="Commits per Author">')
         if len(all_authors) > self.conf.max_authors:
             f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf.max_authors)
-
+    
         fgl = open(self.path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(self.path + '/commits_by_author.dat', 'w')
-
+    
         lines_by_authors = {}  # cumulated lines by
         # author. to save memory,
         # changes_by_date_by_author[stamp][author] is defined
         # only at points where author commits.
         # lines_by_authors allows us to generate all the
         # points in the .dat file.
-
+    
         # Don't rely on getAuthors to give the same order each
         # time. Be robust and keep the list in a variable.
         commits_by_authors = {}  # cumulated added lines by
-
+    
         self.authors_to_plot = self.data.get_authors(self.conf.max_authors)
         for author in self.authors_to_plot:
             lines_by_authors[author] = 0
@@ -362,21 +373,24 @@ class HTMLReportCreator(ReportCreator):
             fgc.write('%d' % stamp)
             for author in self.authors_to_plot:
                 if author in list(self.data.changes_by_date_by_author[stamp].keys()):
-                    lines_by_authors[author] = self.data.changes_by_date_by_author[stamp][author]['lines_added']
-                    commits_by_authors[author] = self.data.changes_by_date_by_author[stamp][author]['commits']
+                    lines_by_authors[author] = self.data.changes_by_date_by_author[stamp][author][
+                        'lines_added']
+                    commits_by_authors[author] = self.data.changes_by_date_by_author[stamp][author][
+                        'commits']
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
             fgl.write('\n')
             fgc.write('\n')
         fgl.close()
         fgc.close()
-
-        # Authors :: Author of Month
+    
+    def _render_author_of_the_month(self, f):
         f.write(self.html_header(2, 'Author of Month'))
         f.write('<table class="sortable" id="aom">')
         f.write(
             '<tr><th>Month</th><th>Author</th><th>Lines added (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
-            self.conf.authors_top)
+            self.conf.authors_top
+        )
         for yy_mm in reversed(sorted(self.data.months)):
             authors = self.data.get_authors_of_month(yy_mm, self.conf.authors_top + 1)
             lines = authors[0].lines_added_by_month[yy_mm]
@@ -386,22 +400,26 @@ class HTMLReportCreator(ReportCreator):
                 author_names.append(author.name)
             total_lines = self.data.get_total_lines_added_by_month(yy_mm)
             next_line = ', '.join(author_names)
-            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy_mm,
-                name,
-                lines,
-                (100.0 * lines) / total_lines,
-                total_lines,
-                next_line,
-                len(authors)
-            ))
-
+            f.write(
+                '<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
+                    yy_mm,
+                    name,
+                    lines,
+                    (100.0 * lines) / total_lines,
+                    total_lines,
+                    next_line,
+                    len(authors)
+                )
+            )
+    
         f.write('</table>')
-
+    
+    def _render_author_of_the_year(self, f):
         f.write(self.html_header(2, 'Author of Year'))
         f.write(
             '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Lines added (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
-            self.conf.authors_top)
+            self.conf.authors_top
+        )
         for yy in reversed(sorted(self.data.years)):
             authors = self.data.get_authors_of_year(yy, self.conf.authors_top + 1)
             lines = authors[0].lines_added_by_year[yy]
@@ -411,14 +429,17 @@ class HTMLReportCreator(ReportCreator):
                 author_names.append(author.name)
             total_lines = self.data.get_total_lines_by_year(yy)
             next_line = ', '.join(author_names)
-            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
-                yy, name, lines, (100.0 * lines) / total_lines,
-                total_lines,
-                next_line, len(authors)))
-
+            f.write(
+                '<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
+                    yy, name, lines, (100.0 * lines) / total_lines,
+                    total_lines,
+                    next_line, len(authors)
+                )
+            )
+    
         f.write('</table>')
-
-        # Domains
+    
+    def _render_author_domains(self, f):
         f.write(self.html_header(2, 'Commits by Domains'))
         domains_by_commits = self.data.get_domains_sorted_by_commits(reverse=True)
         f.write('<div class="vtable"><table>')
@@ -431,13 +452,34 @@ class HTMLReportCreator(ReportCreator):
             n += 1
             fp.write('%s %d %d\n' % (domain.name, n, domain.commits))
             f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (
-                domain.name, domain.commits, (100.0 * domain.commits / self.data.get_total_commits())))
+                domain.name, domain.commits,
+                (100.0 * domain.commits / self.data.get_total_commits())))
         f.write('</table></div>')
         f.write('<img src="domains.png" alt="Commits by Domains">')
         fp.close()
-
-        f.write('</body></html>')
-        f.close()
+    
+    def _render_author_ownership(self, f):
+        f.write(self.html_header(2, 'Current Code Owners'))
+        f.write(
+            '<table class="sortable" id="cco"><tr><th>Non whitespace lines (%%)</th><th>Author</th></tr>'
+        )
+    
+        author_counts = [
+            (stats['total'], author_name)
+            for author_name, stats in self.data.current_line_owners['authors'].items()
+        ]
+        total_lines = self.data.current_line_owners['total']
+        author_counts.sort(reverse=True)
+        for lines_owned, author_name in author_counts:
+            f.write(
+                '<tr><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (
+                    lines_owned,
+                    (100.0 * lines_owned) / total_lines,
+                    total_lines,
+                    author_name,
+                )
+            )
+        f.write('</table>')
 
     def _create_files(self):
         f = open(self.path + '/files.html', 'w')
@@ -451,7 +493,9 @@ class HTMLReportCreator(ReportCreator):
         try:
             f.write(
                 '<dt>Average file size</dt><dd>%.2f bytes</dd>' % (
-                    float(self.data.get_total_size()) / self.data.get_total_files()))
+                    float(self.data.get_total_size()) / self.data.get_total_files()
+                )
+            )
         except ZeroDivisionError:
             pass
         f.write('</dl>\n')
@@ -479,7 +523,8 @@ class HTMLReportCreator(ReportCreator):
         # Files :: Extensions
         f.write(self.html_header(2, 'Extensions'))
         f.write(
-            '<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+            '<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>'
+        )
         for ext in sorted(self.data.extensions.keys()):
             files = self.data.extensions[ext]['files']
             lines = self.data.extensions[ext]['lines']
@@ -487,8 +532,11 @@ class HTMLReportCreator(ReportCreator):
                 loc_percentage = (100.0 * lines) / self.data.get_total_loc()
             except ZeroDivisionError:
                 loc_percentage = 0
-            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (
-                ext, files, (100.0 * files) / self.data.get_total_files(), lines, loc_percentage, lines / files))
+            f.write(
+                '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (
+                    ext, files, (100.0 * files) / self.data.get_total_files(), lines, loc_percentage, lines / files
+                )
+            )
         f.write('</table>')
 
         f.write('</body></html>')

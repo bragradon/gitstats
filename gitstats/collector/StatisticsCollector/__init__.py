@@ -1,7 +1,10 @@
-__all__ = ["StatisticsCollectorStrategy",
-           "AuthorStrategy",
-           "FileStrategy",
-           "LineStrategy",
-           "RevisionStrategy",
-           "RevisionHistoryStrategy",
-           "TagStrategy"]
+__all__ = [
+    "StatisticsCollectorStrategy",
+    "AuthorStrategy",
+    "FileStrategy",
+    "LineStrategy",
+    "RevisionStrategy",
+    "RevisionHistoryStrategy",
+    "TagStrategy",
+    "FameStrategy",
+]
