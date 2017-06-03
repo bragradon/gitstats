@@ -86,9 +86,9 @@ class Data(object):
     def get_authors_of_month(self, yy_mm, top=None):
         result = []
         for author in self.authors.values():
-            if yy_mm in author.lines_by_month.keys():
+            if yy_mm in author.lines_added_by_month.keys():
                 result.append(author)
-        result = sorted(result, key=lambda k: k.lines_by_month[yy_mm], reverse=True)
+        result = sorted(result, key=lambda k: k.lines_added_by_month[yy_mm], reverse=True)
         if top:
             result = result[:top]
         return result
@@ -107,12 +107,19 @@ class Data(object):
             total_lines += author.lines_by_month[yy_mm]
         return total_lines
     
+    def get_total_lines_added_by_month(self, yy_mm):
+        authors = self.get_authors_of_month(yy_mm)
+        total_lines = 0
+        for author in authors:
+            total_lines += author.lines_added_by_month[yy_mm]
+        return total_lines
+    
     def get_authors_of_year(self, year, top=None):
         result = []
         for author in self.authors.values():
-            if year in author.lines_by_year.keys():
+            if year in author.lines_added_by_year.keys():
                 result.append(author)
-        result = sorted(result, key=lambda k: k.lines_by_year[year], reverse=True)
+        result = sorted(result, key=lambda k: k.lines_added_by_year[year], reverse=True)
         if top:
             result = result[:top]
         return result
@@ -129,6 +136,13 @@ class Data(object):
         total_lines = 0
         for author in authors:
             total_lines += author.lines_by_year[year]
+        return total_lines
+    
+    def get_total_lines_added_by_year(self, year):
+        authors = self.get_authors_of_year(year)
+        total_lines = 0
+        for author in authors:
+            total_lines += author.lines_added_by_year[year]
         return total_lines
 
     def get_first_commit_date(self):
@@ -171,11 +185,11 @@ class Data(object):
     def get_keys_sorted_by_values(d):
         return [el[1] for el in sorted([(el[1], el[0]) for el in list(d.items())])]
 
-    def add_commit(self, author, stamp, num_lines):
+    def add_commit(self, author, stamp, num_lines_added, num_lines_deleted):
         date = datetime.datetime.fromtimestamp(float(stamp))
         yy_mm = date.strftime('%Y-%m')
         yy = date.year
 
         self.months.add(yy_mm)
         self.years.add(yy)
-        author.add_commit(yy_mm, yy, num_lines)
+        author.add_commit(yy_mm, yy, num_lines_added, num_lines_deleted)
