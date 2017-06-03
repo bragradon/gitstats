@@ -6,7 +6,7 @@ from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import \
     StatisticsCollectorStrategy
 
 
-class FameStrategy(StatisticsCollectorStrategy):
+class CurrentOwnerStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
     

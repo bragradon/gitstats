@@ -62,7 +62,7 @@ class Data(object):
         # line statistics
         self.changes_by_date = {}  # stamp -> { files, ins, del }
         
-        # fame statistics
+        # current owner statistics
         self.current_line_owners = {
             'total' : 0,
             'authors' : {},

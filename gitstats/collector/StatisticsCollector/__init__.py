@@ -6,5 +6,5 @@ __all__ = [
     "RevisionStrategy",
     "RevisionHistoryStrategy",
     "TagStrategy",
-    "FameStrategy",
+    "CurrentOwnerStrategy",
 ]
